@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlashGen</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root{
+  --bg:#0c0c0f;--sf:#16161a;--sf2:#1e1e24;--sf3:#26262e;
+  --bd:#2a2a34;--bd2:#3a3a46;
+  --tx:#eaeaf2;--tx2:#8a8aa8;--tx3:#50506a;
+  --ac:#7c6ff7;--ac2:#a09af8;--acbg:rgba(124,111,247,.1);
+  --gn:#4ade80;--gnbg:rgba(74,222,128,.1);
+  --rd:#f87171;--rdbg:rgba(248,113,113,.1);
+  --am:#fbbf24;--r:8px;--r2:12px;
+}
+html.light{
+  --bg:#f5f5f7;--sf:#ffffff;--sf2:#f0f0f3;--sf3:#e8e8ec;
+  --bd:#dcdce4;--bd2:#c8c8d4;
+  --tx:#1a1a2e;--tx2:#60607a;--tx3:#a0a0b8;
+  --ac:#6055e0;--ac2:#5048c8;--acbg:rgba(96,85,224,.08);
+  --gn:#16a34a;--gnbg:rgba(22,163,74,.08);
+  --rd:#dc2626;--rdbg:rgba(220,38,38,.08);
+  --am:#d97706;
+}
+html.light .topbar{background:rgba(245,245,247,.95);}
+html.light .stat{background:var(--sf);}
+html.light .ic-ph{background:var(--sf2);}
+html.light .spin{border-color:var(--bd2);border-top-color:var(--ac);}
+html.light select option{background:var(--sf);color:var(--tx);}
+html.light .card{background:var(--sf);}
+html.light .pi{background:var(--sf);}
+html.light .pset{background:rgba(96,85,224,.04);border-color:rgba(96,85,224,.15);}
+html.light .upload{border-color:var(--bd2);}
+html.light .upload.ok{background:rgba(22,163,74,.06);}
+html.light .tgb.on{background:rgba(96,85,224,.1);}
+html.light .chip.on{background:rgba(96,85,224,.1);}
+html.light .excard{background:var(--sf);}
+html.light #blobWarn{background:rgba(217,119,6,.06);border-color:rgba(217,119,6,.2);}
+html.light input,html.light select,html.light textarea,html.light .pi-ta{background:var(--sf2);border-color:var(--bd);}
+html.light .rangebar{background:var(--sf);}
+html.light .urlbox{background:var(--sf2);}
+html.light .preview-box{background:var(--sf2);}
+html.light .tw{border-color:var(--bd);}
+html.light th{background:var(--sf2);}
+html.light .empty{background:var(--sf);}
+html.light .summ-row{border-color:var(--bd);}
+html.light code{background:var(--sf2);}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6}
+.topbar{position:sticky;top:0;z-index:100;height:52px;background:rgba(12,12,15,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 28px;gap:20px}
+.logo{font-size:15px;font-weight:600;letter-spacing:-.03em;flex-shrink:0}
+.logo em{color:var(--ac);font-style:normal}
+.toc{display:flex;align-items:center;gap:2px;overflow-x:auto}
+.toc a{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;font-size:12px;color:var(--tx3);cursor:pointer;white-space:nowrap;transition:all .15s;text-decoration:none}
+.toc a:hover{color:var(--tx2);background:var(--sf2)}
+.toc a.on{color:var(--ac2);background:var(--acbg)}
+.toc-n{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.sep-dot{width:4px;height:4px;border-radius:50%;background:var(--bd2);flex-shrink:0;margin:0 2px}
+.page{max-width:960px;margin:0 auto;padding:0 28px 100px}
+.section{padding-top:52px}
+.sec-hd{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--bd)}
+.sec-num{width:28px;height:28px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'IBM Plex Mono',monospace;color:#fff;font-weight:500;flex-shrink:0}
+.sec-title{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.sec-sub{font-size:12px;color:var(--tx2);margin-top:1px}
+.sdiv{height:1px;background:var(--bd);margin:52px 0 0;opacity:.4}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);padding:18px 20px;margin-bottom:12px}
+.card:last-child{margin-bottom:0}
+.ct{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--tx3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;font-weight:500}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:12px}.field:last-child{margin-bottom:0}
+label{font-size:12px;color:var(--tx2);display:block;margin-bottom:4px}
+input,select,textarea{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 11px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)}
+textarea{resize:vertical;line-height:1.55}
+select option{background:var(--sf2)}
+.hint{font-size:11px;color:var(--tx3);margin-top:4px;line-height:1.5}
+.hint a{color:var(--ac2);text-decoration:none}.hint a:hover{text-decoration:underline}
+.kr{display:flex;gap:7px}.kr input{flex:1;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.eyebtn{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx2);padding:8px 11px;cursor:pointer;font-size:12px;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.eyebtn:hover{border-color:var(--bd2)}
+.tg{display:flex;gap:7px}
+.tgb{flex:1;padding:8px;text-align:center;font-size:13px;border:1px solid var(--bd);border-radius:var(--r);cursor:pointer;color:var(--tx2);background:transparent;font-family:'DM Sans',sans-serif;transition:all .15s}
+.tgb.on{border-color:var(--ac);color:var(--ac2);background:var(--acbg);font-weight:500}
+.upload{border:1.5px dashed var(--bd2);border-radius:var(--r2);padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s}
+.upload:hover,.upload.over{border-color:var(--ac);background:var(--acbg)}
+.upload.ok{border-color:var(--gn);background:var(--gnbg);border-style:solid}
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bd);margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--sf2);padding:8px 12px;text-align:left;font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--bd);color:var(--tx2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--sf2)}
+.th-s{color:var(--ac2)!important}.th-m{color:var(--gn)!important}
+.td-s{color:var(--tx)!important}.td-m{color:var(--gn)!important}
+.cprow{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.cptag{display:flex;align-items:center;gap:7px;font-size:12px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}.dot.s{background:var(--ac)}.dot.m{background:var(--gn)}
+.cptag select{width:auto;padding:5px 9px;font-size:12px}
+.rangebar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);flex-wrap:wrap;margin-top:12px}
+.rangebar span{font-size:12px;color:var(--tx2);white-space:nowrap}
+.rangebar input[type=number]{width:68px}
+.rcount{font-size:12px;font-family:'IBM Plex Mono',monospace;color:var(--ac2);margin-left:auto}
+.abar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;padding:8px 16px;font-weight:500;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn.p{background:var(--ac);color:#fff;border:none}.btn.p:hover{background:#6a5ee0}.btn.p:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.s{background:transparent;border:1px solid var(--bd2);color:var(--tx2)}.btn.s:hover{border-color:var(--tx2);color:var(--tx)}.btn.s:disabled{opacity:.4;cursor:not-allowed}
+.btn.g{background:transparent;border:none;color:var(--tx3);padding:5px 9px;font-size:12px;font-weight:400}.btn.g:hover{color:var(--tx2);background:var(--sf2);border-radius:4px}
+.empty{padding:36px;text-align:center;color:var(--tx3);font-size:13px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2)}
+.pi{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);padding:14px 16px;margin-bottom:8px;display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start}
+.pi-num{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--tx3);margin-bottom:4px}
+.pi-sent{font-size:13px;font-weight:500;color:var(--tx);margin-bottom:2px;line-height:1.4}
+.pi-mean{font-size:11px;color:var(--tx2)}
+.pi-ta{width:100%;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:12px;padding:9px 11px;resize:vertical;min-height:72px;outline:none;line-height:1.5;transition:border-color .15s}
+.pi-ta:focus{border-color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.stat{background:var(--sf);padding:12px 16px;text-align:center}
+.stat-n{font-size:20px;font-weight:600;font-family:'IBM Plex Mono',monospace;line-height:1}
+.stat-l{font-size:10px;color:var(--tx3);margin-top:3px}
+.s-total .stat-n{color:var(--tx2)}.s-pending .stat-n{color:var(--am)}.s-done .stat-n{color:var(--gn)}.s-err .stat-n{color:var(--rd)}
+.pbwrap{height:3px;background:var(--bd);border-radius:999px;overflow:hidden;margin-bottom:14px}
+.pb{height:100%;background:var(--ac);border-radius:999px;transition:width .4s;width:0%}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.ic{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.ic:hover{border-color:var(--bd2)}
+.ic-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.ic-ph{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:var(--sf2);color:var(--tx3);font-size:11px;text-align:center;padding:8px}
+.spin{width:18px;height:18px;border:2px solid var(--bd2);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ic-meta{padding:9px 11px;border-top:1px solid var(--bd)}
+.ic-s{font-size:12px;font-weight:500;color:var(--tx);line-height:1.35;margin-bottom:2px}
+.ic-m{font-size:11px;color:var(--tx2);margin-bottom:5px}
+.badge{display:inline-flex;align-items:center;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;font-weight:500}
+.b-wait{background:var(--sf2);color:var(--tx3)}.b-run{background:var(--acbg);color:var(--ac2)}.b-done{background:var(--gnbg);color:var(--gn)}.b-err{background:var(--rdbg);color:var(--rd)}
+.ic-btns{display:flex;gap:5px;margin-top:6px}
+.ic-btns a,.ic-btns button{flex:1;text-align:center;font-size:10px;padding:4px;border-radius:4px;cursor:pointer;text-decoration:none;font-family:'DM Sans',sans-serif}
+.ic-btns a{background:var(--acbg);color:var(--ac2);border:none}.ic-btns a:hover{opacity:.8}
+.ic-btns .dl{background:var(--sf2);color:var(--tx2);border:1px solid var(--bd)}.ic-btns .dl:hover{color:var(--tx)}
+.excard{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);padding:16px 18px;margin-top:14px}
+.urlbox{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--tx2);line-height:2;max-height:100px;overflow-y:auto;white-space:pre;margin-bottom:10px;user-select:all}
+.cp-ok{font-size:12px;color:var(--gn);display:none}
+.summ-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--bd)}.summ-row:last-child{border-bottom:none}
+.summ-k{color:var(--tx3)}.summ-v{color:var(--tx);font-weight:500}
+.coll-hd{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.chev{font-size:10px;color:var(--tx3);transition:transform .2s}.chev.open{transform:rotate(180deg)}
+.coll-body{overflow:hidden;max-height:0;transition:max-height .3s ease}.coll-body.open{max-height:600px}
+.opt{font-size:9px;background:var(--sf2);border:1px solid var(--bd);border-radius:3px;padding:1px 5px;color:var(--tx3);margin-left:4px;font-family:'IBM Plex Mono',monospace}
+code{font-family:'IBM Plex Mono',monospace;background:var(--sf2);padding:1px 5px;border-radius:3px;font-size:11px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}.pi{grid-template-columns:1fr}.page{padding:0 14px 60px}}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:5px 13px;border-radius:999px;border:1px solid var(--bd);font-size:12px;color:var(--tx2);cursor:pointer;transition:all .15s;background:transparent;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.chip:hover{border-color:var(--bd2);color:var(--tx)}
+.chip.on{border-color:var(--ac);color:var(--ac2);background:var(--acbg);font-weight:500}
+.pset{background:rgba(124,111,247,.05);border:1px solid rgba(124,111,247,.2);border-radius:var(--r2);padding:18px 20px;margin-bottom:16px}
+.pset-row{margin-bottom:16px}.pset-row:last-child{margin-bottom:0}
+.pset-label{font-size:10px;font-family:'IBM Plex Mono',monospace;color:var(--ac2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;font-weight:500;display:flex;align-items:center;gap:7px}
+.preview-box{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--r);padding:10px 13px;font-size:11px;color:var(--ac2);font-family:'IBM Plex Mono',monospace;line-height:1.7;word-break:break-word;margin-top:12px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Flash<em>Gen</em></div>
+  <div class="toc">
+    <a href="#s1"><div class="toc-n">1</div>Cài đặt API</a>
+    <div class="sep-dot"></div>
+    <a href="#s2"><div class="toc-n">2</div>Dữ liệu</a>
+    <div class="sep-dot"></div>
+    <a href="#s3"><div class="toc-n">3</div>Prompt</a>
+    <div class="sep-dot"></div>
+    <a href="#s4"><div class="toc-n">4</div>Gen ảnh</a>
+  </div>
+  <button id="themeBtn" onclick="toggleTheme()" title="Chuyển sang sáng" style="margin-left:auto;flex-shrink:0;background:transparent;border:1px solid var(--bd);border-radius:var(--r);padding:5px 10px;cursor:pointer;font-size:15px;line-height:1;color:var(--tx2)">🌙</button>
+</div>
+
+<div class="page">
+
+<!-- ── BƯỚC 1 ── -->
+<div class="section" id="s1">
+  <div class="sec-hd">
+    <div class="sec-num">1</div>
+    <div><div class="sec-title">Cài đặt API & lưu trữ</div><div class="sec-sub">Chọn nhà cung cấp và nhập API key</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div class="card">
+        <div class="ct">API gen ảnh</div>
+        <div class="field">
+          <label>Nhà cung cấp</label>
+          <div class="tg">
+            <button class="tgb on" id="tb-openai" onclick="setProvider('openai')">DALL·E 3 (OpenAI)</button>
+            <button class="tgb" id="tb-nb2" onclick="setProvider('nanobana')">Nano Banana (Google)</button>
+            <button class="tgb" id="tb-sd" onclick="setProvider('stability')">Stable Diffusion</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>API Key</label>
+          <div class="kr">
+            <input type="password" id="apiKey" placeholder="sk-..." oninput="S.apiKey=this.value">
+            <button class="eyebtn" onclick="toggleK()">Hiện</button>
+          </div>
+          <div class="hint" id="keyHint">Lấy tại <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a> · ~$0.04/ảnh standard</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct">Cài đặt ảnh</div>
+        <div class="field" id="qualF">
+          <label>Chất lượng</label>
+          <select onchange="S.imgQuality=this.value;updSumm()">
+            <option value="standard">Standard (~$0.04/ảnh)</option>
+            <option value="hd">HD (~$0.08/ảnh)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Kích thước ảnh</label>
+          <div style="display:flex;gap:7px;align-items:center;margin-bottom:8px">
+            <input type="number" id="imgW" value="1024" min="64" style="width:90px;text-align:center" oninput="onSizeInput()">
+            <span style="color:var(--tx3);font-size:13px">×</span>
+            <input type="number" id="imgH" value="1024" min="64" style="width:90px;text-align:center" oninput="onSizeInput()">
+            <select id="sizeUnit" style="width:72px" onchange="onUnitChange(this.value)">
+              <option value="px">px</option>
+              <option value="mm">mm</option>
+              <option value="cm">cm</option>
+            </select>
+            <span id="apiSizeHint" style="font-size:11px;color:var(--ac2);font-family:'IBM Plex Mono',monospace;white-space:nowrap"></span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <button class="chip on" data-w="1024" data-h="1024" onclick="pickSize(this)">1024×1024</button>
+            <button class="chip" data-w="1792" data-h="1024" onclick="pickSize(this)">1792×1024</button>
+            <button class="chip" data-w="1024" data-h="1792" onclick="pickSize(this)">1024×1792</button>
+            <button class="chip" data-w="900" data-h="1350" onclick="pickSize(this)">900×1350</button>
+            <button class="chip" data-w="1350" data-h="900" onclick="pickSize(this)">1350×900</button>
+            <button class="chip" data-w="1024" data-h="1536" onclick="pickSize(this)">1024×1536</button>
+            <button class="chip" data-w="352" data-h="762" onclick="pickSize(this)">352×762</button>
+          </div>
+          <div class="hint" id="sizeNote">DALL·E 3 hỗ trợ: 1024×1024, 1792×1024, 1024×1792 — kích thước khác sẽ chọn tỉ lệ gần nhất</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="coll-hd" onclick="toggleDrive()">
+          <div class="ct" style="margin:0">Lưu ảnh lên Google Drive <span class="opt">tuỳ chọn</span></div>
+          <span class="chev" id="drvChev">▼</span>
+        </div>
+        <div class="coll-body" id="drvBody">
+          <div style="margin-top:14px">
+            <div style="font-size:12px;color:var(--tx2);padding:10px 12px;background:var(--sf2);border-radius:var(--r);margin-bottom:12px;line-height:1.6">
+              Ảnh gen xong sẽ tự upload lên Drive qua GAS — không cần OAuth Client ID.<br>
+              <span style="color:var(--tx3);font-size:11px">Yêu cầu: đã kết nối GAS ở Bước 2</span>
+            </div>
+            <div class="field">
+              <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleDriveGAS()">
+                <span style="font-size:13px;color:var(--tx)">Tự động upload ảnh lên Drive qua GAS</span>
+                <div id="driveToggle" style="width:40px;height:22px;border-radius:999px;background:var(--bd2);position:relative;transition:background .2s;flex-shrink:0">
+                  <div id="driveToggleKnob" style="width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Folder ID <span class="opt">tuỳ chọn</span></label>
+              <input type="text" id="gasDriveFolderId" placeholder="Để trống = lưu vào My Drive" oninput="S.gasDriveFolderId=this.value" style="font-family:'IBM Plex Mono',monospace;font-size:12px">
+              <div class="hint">URL folder: drive.google.com/drive/folders/<b>FOLDER_ID</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:rgba(124,111,247,.05);border-color:rgba(124,111,247,.2)">
+        <div class="ct" style="color:var(--ac2)">Tóm tắt</div>
+        <div class="summ-row"><span class="summ-k">Provider</span><span class="summ-v" id="sum-prov">DALL·E 3 (OpenAI)</span></div>
+        <div class="summ-row"><span class="summ-k">Kích thước</span><span class="summ-v" id="sum-size">1024×1024</span></div>
+        <div class="summ-row"><span class="summ-k">Chất lượng</span><span class="summ-v" id="sum-qual">Standard</span></div>
+        <div class="summ-row"><span class="summ-k">Lưu ảnh</span><span class="summ-v" id="sum-drive">Tải về máy</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sdiv"></div>
+
+<!-- ── BƯỚC 2 ── -->
+<div class="section" id="s2">
+  <div class="sec-hd">
+    <div class="sec-num">2</div>
+    <div><div class="sec-title">Dữ liệu</div><div class="sec-sub">Chọn nguồn dữ liệu</div></div>
+  </div>
+
+  <!-- SOURCE TOGGLE -->
+  <div class="tg" style="margin-bottom:16px;max-width:400px">
+    <button class="tgb on" id="src-file" onclick="switchSrc('file')">📂 Upload file</button>
+    <button class="tgb" id="src-gas"  onclick="switchSrc('gas')">🔗 Google Sheet (GAS)</button>
+  </div>
+
+  <!-- FILE MODE -->
+  <div id="mode-file">
+    <div class="upload" id="upArea" onclick="document.getElementById('fi').click()" ondragover="evDrag(event)" ondrop="evDrop(event)">
+      <input type="file" id="fi" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadFile(this.files[0])">
+      <div style="font-size:28px;margin-bottom:8px" id="upIcon">📂</div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px" id="upTitle">Kéo thả hoặc nhấn để chọn file</div>
+      <div style="font-size:12px;color:var(--tx2)" id="upSub">.xlsx · .xls · .csv</div>
+    </div>
+  </div>
+
+  <!-- GAS MODE -->
+  <div id="mode-gas" style="display:none">
+    <div class="card">
+      <div class="ct">Kết nối Google Apps Script</div>
+      <div class="field">
+        <label>GAS Web App URL</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="gasUrl" placeholder="https://script.google.com/macros/s/.../exec" oninput="S.gasUrl=this.value" style="font-size:12px;font-family:'IBM Plex Mono',monospace">
+          <button class="btn s" style="white-space:nowrap;font-size:12px" onclick="pingGAS()">Kiểm tra</button>
+        </div>
+        <div id="gasStatus" style="font-size:11px;margin-top:5px;color:var(--tx3)">Chưa kết nối</div>
+      </div>
+      <div class="field">
+        <label>Sheet ID <span style="font-size:11px;color:var(--tx3)">(lấy từ URL sheet)</span></label>
+        <input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" oninput="S.sheetId=this.value" style="font-size:12px;font-family:'IBM Plex Mono',monospace">
+        <div class="hint">URL sheet: docs.google.com/spreadsheets/d/<b>SHEET_ID</b>/edit</div>
+      </div>
+      <div class="field" id="sheetNameField" style="display:none">
+        <label>Chọn sheet tab</label>
+        <select id="sheetNameSel" onchange="S.sheetName=this.value"></select>
+      </div>
+      <div class="abar">
+        <button class="btn p" style="font-size:13px" onclick="loadFromGAS()">Tải dữ liệu từ Sheet</button>
+        <span id="gasLoadStatus" style="font-size:12px;color:var(--tx2)"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW (dùng chung cho cả 2 mode) -->
+  <div id="previewArea" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:10px">
+      <div class="cprow">
+        <div class="cptag"><div class="dot s"></div><label style="margin:0">Câu ví dụ</label>
+          <select id="selSent" onchange="S.sentenceCol=+this.value;renderTbl()"></select>
+        </div>
+        <div class="cptag"><div class="dot m"></div><label style="margin:0">Dịch nghĩa</label>
+          <select id="selMean" onchange="S.meaningCol=+this.value;renderTbl()"></select>
+        </div>
+        <div class="cptag" id="imgColWrap" style="display:none">
+          <div class="dot" style="background:var(--am)"></div><label style="margin:0">Ghi ảnh vào cột</label>
+          <select id="selImg" onchange="S.imageCol=+this.value"></select>
+        </div>
+      </div>
+      <button class="btn g" onclick="clearData()">✕ Xoá</button>
+    </div>
+    <div class="rangebar">
+      <span>Gen từ hàng dữ liệu</span>
+      <input type="number" id="rowFrom" value="1" min="1" style="width:68px" oninput="S.rowFrom=clamp(+this.value);updRC()">
+      <span>đến</span>
+      <input type="number" id="rowTo" value="1" min="1" style="width:68px" oninput="S.rowTo=clamp(+this.value);updRC()">
+      <span id="rowTotal" style="color:var(--tx3)">/ 0 hàng</span>
+      <span id="sheetRowRange" style="color:var(--ac2);font-size:11px;font-family:'IBM Plex Mono',monospace"></span>
+      <span class="rcount" id="rcount">0 ảnh</span>
+      <button class="btn g" onclick="selAll()">Tất cả</button>
+    </div>
+    <div class="tw" id="tbl"></div>
+    <div style="font-size:11px;color:var(--tx3);margin-top:6px" id="tblNote"></div>
+    <div class="abar">
+      <button class="btn p" onclick="buildPrompts()">Tạo prompt → Bước 3 ↓</button>
+    </div>
+  </div>
+</div>
+
+<div class="sdiv"></div>
+
+<!-- ── BƯỚC 3 ── -->
+<div class="section" id="s3">
+  <div class="sec-hd">
+    <div class="sec-num">3</div>
+    <div><div class="sec-title">Chỉnh sửa prompt</div><div class="sec-sub">Xem và sửa prompt trước khi gen ảnh</div></div>
+  </div>
+  <div id="p3empty" class="empty">Hoàn thành Bước 2 để tạo prompt tự động</div>
+  <div id="p3area" style="display:none">
+
+    <!-- SETTINGS PANEL -->
+    <div class="pset" id="psetPanel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:500;color:var(--tx)">Cài đặt prompt</div>
+        <button class="btn p" style="font-size:12px;padding:6px 14px" onclick="applySettings()">↺ Áp dụng lại tất cả</button>
+      </div>
+
+      <div class="pset-row">
+        <div class="pset-label">Style ảnh</div>
+        <div class="chips" id="styleChips">
+          <button class="chip on" data-val="photorealistic" onclick="pickChip('style',this)">Photorealistic</button>
+          <button class="chip" data-val="illustration" onclick="pickChip('style',this)">Illustration</button>
+          <button class="chip" data-val="watercolor painting" onclick="pickChip('style',this)">Watercolor</button>
+          <button class="chip" data-val="flat design vector art" onclick="pickChip('style',this)">Flat Design</button>
+          <button class="chip" data-val="anime style" onclick="pickChip('style',this)">Anime</button>
+          <button class="chip" data-val="3D render" onclick="pickChip('style',this)">3D Render</button>
+          <button class="chip" data-val="comic book style" onclick="pickChip('style',this)">Comic</button>
+          <button class="chip" data-val="minimalist line art" onclick="pickChip('style',this)">Line Art</button>
+        </div>
+      </div>
+
+      <div class="pset-row">
+        <div class="pset-label">Màu sắc</div>
+        <div class="chips" id="colorChips">
+          <button class="chip on" data-val="" onclick="pickChip('color',this)">Tự nhiên</button>
+          <button class="chip" data-val="warm tones, golden hour lighting" onclick="pickChip('color',this)">Warm</button>
+          <button class="chip" data-val="cool blue tones" onclick="pickChip('color',this)">Cool Blue</button>
+          <button class="chip" data-val="pastel colors" onclick="pickChip('color',this)">Pastel</button>
+          <button class="chip" data-val="vibrant saturated colors" onclick="pickChip('color',this)">Vibrant</button>
+          <button class="chip" data-val="black and white, monochrome" onclick="pickChip('color',this)">B&W</button>
+          <button class="chip" data-val="earthy muted tones" onclick="pickChip('color',this)">Earthy</button>
+          <button class="chip" data-val="neon colors, dark background" onclick="pickChip('color',this)">Neon</button>
+        </div>
+      </div>
+
+      <div class="pset-row">
+        <div class="pset-label">Góc chụp / bố cục</div>
+        <div class="chips" id="compChips">
+          <button class="chip on" data-val="" onclick="pickChip('comp',this)">Mặc định</button>
+          <button class="chip" data-val="close-up shot" onclick="pickChip('comp',this)">Close-up</button>
+          <button class="chip" data-val="wide angle shot" onclick="pickChip('comp',this)">Wide angle</button>
+          <button class="chip" data-val="bird's eye view" onclick="pickChip('comp',this)">Top-down</button>
+          <button class="chip" data-val="cinematic composition" onclick="pickChip('comp',this)">Cinematic</button>
+        </div>
+      </div>
+
+      <div class="pset-row">
+        <div class="pset-label">Yêu cầu thêm <span style="color:var(--tx3);font-weight:400;text-transform:none;font-size:11px;font-family:'DM Sans',sans-serif">— áp dụng cho tất cả ảnh</span></div>
+        <input type="text" id="customInput" placeholder="VD: children's book style, simple background, outdoors in Vietnam..." oninput="updPreview()">
+      </div>
+
+      <div id="promptPreview" class="preview-box"></div>
+    </div>
+
+    <div class="abar" style="margin-bottom:12px">
+      <span style="font-size:13px;color:var(--tx2)" id="pcount"></span>
+      <button class="btn g" onclick="regenAll()">↺ Tạo lại tất cả</button>
+    </div>
+    <div id="plist"></div>
+    <div class="abar" style="margin-top:16px">
+      <button class="btn p" onclick="goGen()">Bắt đầu gen ảnh → Bước 4 ↓</button>
+    </div>
+  </div>
+</div>
+
+<div class="sdiv"></div>
+
+<!-- ── BƯỚC 4 ── -->
+<div class="section" id="s4">
+  <div class="sec-hd">
+    <div class="sec-num">4</div>
+    <div><div class="sec-title">Gen ảnh</div><div class="sec-sub">Chạy và theo dõi kết quả realtime</div></div>
+  </div>
+  <div id="p4empty" class="empty">Hoàn thành Bước 3 để bắt đầu gen ảnh</div>
+  <div id="p4area" style="display:none">
+    <div class="abar" style="margin-bottom:14px">
+      <button class="btn p" id="startBtn" onclick="startGen()">▶ Bắt đầu gen</button>
+      <button class="btn s" id="stopBtn" onclick="S.stop=true" disabled>■ Dừng</button>
+      <span style="font-size:12px;color:var(--tx2)" id="genStatus"></span>
+    </div>
+    <div class="stats">
+      <div class="stat s-total"><div class="stat-n" id="st-t">0</div><div class="stat-l">Tổng</div></div>
+      <div class="stat s-pending"><div class="stat-n" id="st-w">0</div><div class="stat-l">Chờ</div></div>
+      <div class="stat s-done"><div class="stat-n" id="st-d">0</div><div class="stat-l">Thành công</div></div>
+      <div class="stat s-err"><div class="stat-n" id="st-e">0</div><div class="stat-l">Lỗi</div></div>
+    </div>
+    <div class="pbwrap"><div class="pb" id="pb"></div></div>
+    <div class="rg" id="rg"></div>
+    <div class="excard" id="exBox" style="display:none">
+      <div class="ct">Export URLs → paste vào cột example_image</div>
+      <div id="blobWarn" style="display:none;font-size:12px;color:var(--am);background:var(--amber-bg,rgba(251,191,36,.08));border:1px solid rgba(251,191,36,.25);border-radius:var(--r);padding:10px 13px;margin-bottom:12px;line-height:1.6"></div>
+      <div class="urlbox" id="urlBox"></div>
+      <div class="abar">
+        <button class="btn s" onclick="copyURLs()">Copy URLs</button>
+        <button class="btn s" onclick="dlTSV()">Tải TSV</button>
+        <button class="btn p" id="writeSheetBtn" onclick="writeBackToSheet()" style="display:none">Ghi link về Google Sheet</button>
+        <span class="cp-ok" id="cpOk">✓ Đã copy!</span>
+        <span id="writeStatus" style="font-size:12px;color:var(--gn);display:none"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+const S={
+  provider:'openai',apiKey:'',imgSize:'1024x1024',imgQuality:'standard',stylePreset:'photographic',
+  driveClientId:'',driveFolderId:'',driveToken:null,
+  useDriveGAS:false,gasDriveFolderId:'',
+  headers:[],rawRows:[],sentenceCol:0,meaningCol:1,imageCol:-1,rowFrom:1,rowTo:1,
+  prompts:[],results:[],running:false,stop:false,
+  pStyle:'photorealistic',pColor:'',pComp:'',pCustom:'',
+  srcMode:'file',gasUrl:'',sheetId:'',sheetName:'',
+};
+
+// ── SOURCE TOGGLE ──
+function switchSrc(mode){
+  S.srcMode=mode;
+  document.getElementById('src-file').classList.toggle('on',mode==='file');
+  document.getElementById('src-gas').classList.toggle('on',mode==='gas');
+  document.getElementById('mode-file').style.display=mode==='file'?'':'none';
+  document.getElementById('mode-gas').style.display=mode==='gas'?'':'none';
+}
+
+// ── GAS HELPERS ──
+async function gasCall(payload){
+  const url=S.gasUrl||(document.getElementById('gasUrl')?.value||'');
+  if(!url){throw new Error('Chưa nhập GAS URL');}
+
+  // uploadImage với base64 quá lớn cho GET → dùng POST
+  if(payload.action==='uploadImage' && payload.imageBase64){
+    const res=await fetch(url,{
+      method:'POST',
+      redirect:'follow',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('GAS HTTP '+res.status);
+    const text=await res.text();
+    try{return JSON.parse(text);}catch{throw new Error('GAS trả về dữ liệu không hợp lệ');}
+  }
+
+  // Các action khác dùng GET
+  const params=new URLSearchParams();
+  Object.entries(payload).forEach(([k,v])=>{
+    params.set(k, typeof v==='object'?JSON.stringify(v):v);
+  });
+  const res=await fetch(url+'?'+params.toString(),{method:'GET',redirect:'follow'});
+  if(!res.ok) throw new Error('GAS HTTP '+res.status);
+  const text=await res.text();
+  try{return JSON.parse(text);}catch{throw new Error('GAS trả về dữ liệu không hợp lệ');}
+}
+
+async function pingGAS(){
+  const el=document.getElementById('gasStatus');
+  el.textContent='Đang kiểm tra...';el.style.color='var(--tx2)';
+  S.gasUrl=document.getElementById('gasUrl').value.trim();
+  try{
+    const r=await gasCall({action:'ping'});
+    if(r.ok){el.textContent='✅ '+r.msg;el.style.color='var(--gn)';}
+    else throw new Error(r.error||'Lỗi không xác định');
+  }catch(e){el.textContent='❌ '+e.message;el.style.color='var(--rd)';}
+}
+
+async function loadFromGAS(){
+  S.gasUrl=document.getElementById('gasUrl').value.trim();
+  S.sheetId=document.getElementById('sheetId').value.trim();
+  if(!S.gasUrl){alert('Nhập GAS URL!');return;}
+  if(!S.sheetId){alert('Nhập Sheet ID!');return;}
+  const btn=document.getElementById('gasLoadStatus');
+  btn.textContent='Đang tải...';
+  try{
+    const r=await gasCall({action:'getRows',sheetId:S.sheetId,sheetName:S.sheetName});
+    if(r.error) throw new Error(r.error);
+    // Populate sheet tab selector
+    if(r.sheetNames&&r.sheetNames.length>1){
+      const sel=document.getElementById('sheetNameSel');
+      sel.innerHTML=r.sheetNames.map(n=>`<option value="${n}"${n===S.sheetName?'selected':''}>${n}</option>`).join('');
+      sel.onchange=function(){S.sheetName=this.value;loadFromGAS();};
+      document.getElementById('sheetNameField').style.display='';
+    }
+    processData(r.headers,r.rows);
+    btn.textContent=`✅ Đã tải ${r.total} hàng`;
+    // Show write-back button
+    document.getElementById('writeSheetBtn').style.display='';
+  }catch(e){btn.textContent='❌ '+e.message;btn.style.color='var(--rd)';}
+}
+
+async function writeBackToSheet(){
+  const btn=document.getElementById('writeSheetBtn');
+  const status=document.getElementById('writeStatus');
+  if(!S.gasUrl){alert('Cần kết nối GAS ở Bước 2 trước!');return;}
+  if(S.imageCol<0){alert('Chọn cột "Ghi ảnh vào cột" ở Bước 2!');return;}
+  // Dùng driveUrl nếu có, fallback về url
+  const urls=S.results.map(r=>r.driveUrl||r.url||'');
+  btn.disabled=true;btn.textContent='Đang ghi...';
+  status.style.display='none';
+  try{
+    const r=await gasCall({
+      action:'writeUrls',
+      sheetId:S.sheetId,
+      sheetName:S.sheetName,
+      urlColumn:S.imageCol,
+      urls:JSON.stringify(urls),
+      startRow:S.rowFrom-1
+    });
+    if(r.error) throw new Error(r.error);
+    status.textContent=`✅ Đã ghi ${r.written} link vào Sheet`;
+    status.style.display='inline';status.style.color='var(--gn)';
+  }catch(e){
+    status.textContent='❌ '+e.message;status.style.display='inline';status.style.color='var(--rd)';
+  }finally{btn.disabled=false;btn.textContent='Ghi link về Google Sheet';}
+}
+
+// Topbar active highlight
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){const id=e.target.id;document.querySelectorAll('.toc a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));}});
+},{threshold:0.25});
+document.querySelectorAll('.section').forEach(s=>io.observe(s));
+
+// ── THEME ──
+function toggleTheme(){
+  const html=document.documentElement;
+  const isLight=html.classList.contains('light');
+  if(isLight){
+    html.classList.remove('light');
+    document.getElementById('themeBtn').textContent='🌙';
+    document.getElementById('themeBtn').title='Chuyển sang sáng';
+    localStorage.setItem('fg-theme','dark');
+  } else {
+    html.classList.add('light');
+    document.getElementById('themeBtn').textContent='☀️';
+    document.getElementById('themeBtn').title='Chuyển sang tối';
+    localStorage.setItem('fg-theme','light');
+  }
+}
+// Restore saved theme on load
+(function(){
+  const saved=localStorage.getItem('fg-theme');
+  if(saved==='light'){
+    document.documentElement.classList.add('light');
+    window.addEventListener('load',()=>{
+      const b=document.getElementById('themeBtn');
+      if(b){b.textContent='☀️';b.title='Chuyển sang tối';}
+    });
+  }
+})();
+
+// ── STEP 1 ──
+function setProvider(p){
+  S.provider=p;
+  document.getElementById('tb-openai').classList.toggle('on',p==='openai');
+  document.getElementById('tb-nb2').classList.toggle('on',p==='nanobana');
+  document.getElementById('tb-sd').classList.toggle('on',p==='stability');
+  const hints={
+    openai:'Lấy tại <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a> · ~$0.04/ảnh standard',
+    nanobana:'Lấy tại <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a> · <b>500 ảnh/ngày miễn phí</b> · Nano Banana (gemini-2.5-flash)',
+    stability:'Lấy tại <a href="https://platform.stability.ai/account/keys" target="_blank">platform.stability.ai</a> · ~$0.003/ảnh',
+  };
+  document.getElementById('keyHint').innerHTML=hints[p]||'';
+  document.getElementById('qualF').style.display=p==='openai'?'':'none';
+  // Cập nhật size note
+  const sn=document.getElementById('sizeNote');
+  if(sn){
+    if(p==='openai') sn.textContent='DALL·E 3: chỉ hỗ trợ 1024×1024, 1792×1024, 1024×1792 — tỉ lệ gần nhất sẽ được chọn';
+    else if(p==='nanobana') sn.textContent='Nano Banana 2: hỗ trợ 512px, 1K, 2K, 4K với tỉ lệ tự do từ 1:8 đến 8:1';
+    else sn.textContent='Stable Diffusion: hỗ trợ nhiều kích thước tự do';
+  }
+  updSumm();
+}
+function updSumm(){
+  document.getElementById('sum-prov').textContent=S.provider==='openai'?'DALL·E 3 (OpenAI)':S.provider==='nanobana'?'Nano Banana (Google)':'Stable Diffusion';
+  document.getElementById('sum-drive').textContent=S.useDriveGAS?'Google Drive (qua GAS)':'Tải về máy';
+  const [w,h]=S.imgSize.split('x').map(Number);
+  document.getElementById('sum-size').textContent=`${w}×${h} px`;
+}
+
+// ── SIZE PICKER ──
+const PX_PER_MM=96/25.4;
+let _curUnit='px';
+let _rawW=1024,_rawH=1024; // luôn lưu bằng px
+
+function toPx(v,unit){
+  if(unit==='mm') return Math.round(v*PX_PER_MM);
+  if(unit==='cm') return Math.round(v*PX_PER_MM*10);
+  return Math.round(v);
+}
+function fromPx(px,unit){
+  if(unit==='mm') return +(px/PX_PER_MM).toFixed(1);
+  if(unit==='cm') return +(px/PX_PER_MM/10).toFixed(2);
+  return px;
+}
+
+// DALL·E 3 chỉ hỗ trợ 3 kích thước — chọn tỉ lệ gần nhất
+function snapToDALLE(w,h){
+  const ratio=w/h;
+  const opts=[{s:'1024x1024',r:1},{s:'1792x1024',r:1792/1024},{s:'1024x1792',r:1024/1792}];
+  return opts.reduce((a,b)=>Math.abs(b.r-ratio)<Math.abs(a.r-ratio)?b:a).s;
+}
+
+function onSizeInput(){
+  const unit=document.getElementById('sizeUnit').value;
+  const wv=parseFloat(document.getElementById('imgW').value)||1024;
+  const hv=parseFloat(document.getElementById('imgH').value)||1024;
+  _rawW=toPx(wv,unit);_rawH=toPx(hv,unit);
+  applySize();
+}
+function onUnitChange(unit){
+  _curUnit=unit;
+  // chuyển giá trị hiện tại sang đơn vị mới
+  document.getElementById('imgW').value=fromPx(_rawW,unit);
+  document.getElementById('imgH').value=fromPx(_rawH,unit);
+  document.querySelectorAll('[data-w]').forEach(b=>{
+    const bw=+b.dataset.w,bh=+b.dataset.h;
+    b.textContent=unit==='px'?`${bw}×${bh}`:unit==='mm'?`${fromPx(bw,'mm')}×${fromPx(bh,'mm')}mm`:`${fromPx(bw,'cm')}×${fromPx(bh,'cm')}cm`;
+  });
+  applySize();
+}
+function applySize(){
+  if(S.provider==='openai'){
+    const snapped=snapToDALLE(_rawW,_rawH);
+    S.imgSize=snapped;
+    const [sw,sh]=snapped.split('x');
+    document.getElementById('apiSizeHint').textContent=`→ API: ${sw}×${sh}`;
+  } else {
+    S.imgSize=`${_rawW}x${_rawH}`;
+    document.getElementById('apiSizeHint').textContent='';
+  }
+  document.querySelectorAll('[data-w]').forEach(b=>{
+    b.classList.toggle('on',+b.dataset.w===_rawW&&+b.dataset.h===_rawH);
+  });
+  updSumm();
+}
+function pickSize(el){
+  _rawW=+el.dataset.w;_rawH=+el.dataset.h;
+  const unit=document.getElementById('sizeUnit').value;
+  document.getElementById('imgW').value=fromPx(_rawW,unit);
+  document.getElementById('imgH').value=fromPx(_rawH,unit);
+  applySize();
+}
+function toggleK(){
+  const el=document.getElementById('apiKey'),b=el.nextElementSibling;
+  el.type=el.type==='password'?'text':'password';b.textContent=el.type==='password'?'Hiện':'Ẩn';
+}
+function toggleDrive(){
+  const open=document.getElementById('drvBody').classList.toggle('open');
+  document.getElementById('drvChev').classList.toggle('open',open);
+}
+function toggleDriveGAS(){
+  S.useDriveGAS=!S.useDriveGAS;
+  const toggle=document.getElementById('driveToggle');
+  const knob=document.getElementById('driveToggleKnob');
+  if(toggle) toggle.style.background=S.useDriveGAS?'var(--ac)':'var(--bd2)';
+  if(knob) knob.style.left=S.useDriveGAS?'20px':'2px';
+  updSumm();
+}
+function connectDrive(){
+  if(!S.driveClientId){alert('Nhập Client ID!');return;}
+  if(typeof google==='undefined'){alert('Cần chạy qua HTTP server');return;}
+  google.accounts.oauth2.initTokenClient({
+    client_id:S.driveClientId,scope:'https://www.googleapis.com/auth/drive.file',
+    callback:(r)=>{if(r.access_token){S.driveToken=r.access_token;const el=document.getElementById('drvStatus');el.textContent='● Đã kết nối Drive';el.style.color='var(--gn)';document.getElementById('sum-drive').textContent='Google Drive';}}
+  }).requestAccessToken();
+}
+
+// ── STEP 2 ──
+function evDrag(e){e.preventDefault();e.currentTarget.classList.add('over');}
+function evDrop(e){e.preventDefault();e.currentTarget.classList.remove('over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);}
+
+function processData(headers, rows){
+  S.headers=headers;S.rawRows=rows;S.prompts=[];
+  S.rowFrom=1;S.rowTo=rows.length;S.imageCol=-1;
+  // Auto-detect columns
+  headers.forEach(function(h,i){
+    const l=h.toLowerCase();
+    if(l.includes('audio')||l.includes('example')||l.includes('sentence')||l.includes('câu')||l.includes('hanzi'))S.sentenceCol=i;
+    if(l.includes('mean')||l.includes('dịch')||l.includes('nghĩa')||l.includes('translation'))S.meaningCol=i;
+    if(l.includes('image')||l.includes('img')||l.includes('ảnh')||l.includes('picture'))S.imageCol=i;
+  });
+  const opts=headers.map((h,i)=>`<option value="${i}">${h||'Cột '+(i+1)}</option>`).join('');
+  const imgOpts='<option value="-1">— Chưa chọn —</option>'+opts;
+  document.getElementById('selSent').innerHTML=opts;
+  document.getElementById('selMean').innerHTML='<option value="-1">— Không có —</option>'+opts;
+  document.getElementById('selImg').innerHTML=imgOpts;
+  document.getElementById('selSent').value=S.sentenceCol;
+  document.getElementById('selMean').value=S.meaningCol;
+  document.getElementById('selImg').value=S.imageCol;
+  // Show image col selector only in GAS mode
+  document.getElementById('imgColWrap').style.display=S.srcMode==='gas'?'':'none';
+  document.getElementById('rowFrom').value=1;
+  document.getElementById('rowTo').value=rows.length;
+  document.getElementById('rowTotal').textContent='/ '+rows.length+' hàng';
+  updRC();
+  document.getElementById('previewArea').style.display='block';
+  renderTbl();
+}
+
+function clearData(){
+  S.rawRows=[];S.headers=[];S.prompts=[];
+  if(S.srcMode==='file'){
+    document.getElementById('upArea').className='upload';
+    document.getElementById('upIcon').textContent='📂';
+    document.getElementById('upTitle').textContent='Kéo thả hoặc nhấn để chọn file';
+    document.getElementById('upSub').textContent='.xlsx · .xls · .csv';
+  }
+  document.getElementById('previewArea').style.display='none';
+  document.getElementById('p3empty').style.display='';document.getElementById('p3area').style.display='none';
+  document.getElementById('p4empty').style.display='';document.getElementById('p4area').style.display='none';
+}
+
+function loadFile(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=(e)=>{
+    let data;
+    if(file.name.endsWith('.csv'))data=parseCSV(e.target.result);
+    else{const wb=XLSX.read(e.target.result,{type:'binary'});const ws=wb.Sheets[wb.SheetNames[0]];data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});}
+    if(!data.length){alert('File trống!');return;}
+    const headers=data[0].map((h,i)=>String(h).trim()||'Cột '+(i+1));
+    const rows=data.slice(1).filter(r=>r.some(c=>String(c).trim()));
+    document.getElementById('upArea').className='upload ok';
+    document.getElementById('upIcon').textContent='✅';
+    document.getElementById('upTitle').textContent=file.name;
+    document.getElementById('upSub').textContent=`${rows.length} hàng · ${headers.length} cột`;
+    processData(headers,rows);
+  };
+  if(file.name.endsWith('.csv'))r.readAsText(file);else r.readAsBinaryString(file);
+}
+function clamp(v){return Math.max(1,Math.min(v,S.rawRows.length||1));}
+// Sheet row = data row + 1 (vì hàng 1 là header)
+function dataToSheet(n){return n+1;}
+function sheetToData(n){return n-1;}
+function updRC(){
+  const f=S.rowFrom||1,t=Math.min(S.rowTo||S.rawRows.length,S.rawRows.length);
+  const count=Math.max(0,t-f+1);
+  document.getElementById('rcount').textContent=count+' ảnh';
+  // Hiện sheet row range
+  const sf=dataToSheet(f),st=dataToSheet(t);
+  document.getElementById('sheetRowRange').textContent=`(hàng ${sf}–${st} trong sheet)`;
+}
+function selAll(){
+  S.rowFrom=1;S.rowTo=S.rawRows.length;
+  document.getElementById('rowFrom').value=1;
+  document.getElementById('rowTo').value=S.rawRows.length;
+  updRC();
+}
+function renderTbl(){
+  const rows=S.rawRows.slice(0,8);
+  let h='<table><thead><tr>';
+  h+=`<th style="color:var(--tx3);width:44px">#</th>`;
+  S.headers.forEach((hd,i)=>{const c=i===S.sentenceCol?'th-s':i===S.meaningCol?'th-m':'';h+=`<th class="${c}">${hd}</th>`;});
+  h+='</tr></thead><tbody>';
+  rows.forEach((row,idx)=>{
+    const sheetRow=idx+2; // hàng 1 là header
+    h+=`<tr>`;
+    h+=`<td style="color:var(--tx3);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:center">${sheetRow}</td>`;
+    S.headers.forEach((_,i)=>{const c=i===S.sentenceCol?'td-s':i===S.meaningCol?'td-m':'';h+=`<td class="${c}">${row[i]||''}</td>`;});
+    h+='</tr>';
+  });
+  if(S.rawRows.length>8)h+=`<tr><td colspan="${S.headers.length+1}" style="text-align:center;color:var(--tx3);padding:10px;font-style:italic">... và ${S.rawRows.length-8} hàng nữa</td></tr>`;
+  h+='</tbody></table>';
+  document.getElementById('tbl').innerHTML=h;
+  document.getElementById('tblNote').textContent=`Hiển thị 8 hàng đầu · tổng ${S.rawRows.length} hàng dữ liệu (hàng 2–${S.rawRows.length+1} trong sheet)`;
+}
+function parseCSV(text){
+  const rows=[];let cur=[],field='',inQ=false;
+  for(let i=0;i<text.length;i++){const c=text[i];if(inQ){if(c==='"'&&text[i+1]==='"'){field+='"';i++;}else if(c==='"')inQ=false;else field+=c;}else{if(c==='"')inQ=true;else if(c===','){cur.push(field);field='';}else if(c==='\r'&&text[i+1]==='\n'){cur.push(field);rows.push(cur);cur=[];field='';i++;}else if(c==='\n'||c==='\r'){cur.push(field);rows.push(cur);cur=[];field='';}else field+=c;}}
+  if(field||cur.length){cur.push(field);rows.push(cur);}
+  return rows.filter(r=>r.length>0);
+}
+
+// ── STEP 3 ──
+function mkPrompt(sentence,meaning){
+  const style=S.pStyle||'photorealistic';
+  const color=S.pColor||'natural lighting, warm tones';
+  const comp=S.pComp||'eye-level shot, immersive atmosphere';
+  const custom=S.pCustom?.trim()||'';
+
+  // Dùng câu ví dụ (tiếng Trung) làm input chính
+  const base=sentence||meaning;
+
+  const visualMap=[
+    // Tiếng Trung
+    [/国家|这个国|大国|国土/,'A vast nation landscape with towering mountains, winding rivers, dense forests and modern cities — a sense of immense scale and geographic diversity'],
+    [/越南/,'A breathtaking Vietnamese countryside with terraced rice paddies cascading down hillsides, traditional stilt houses, water buffaloes and locals in conical hats'],
+    [/日本|樱花|东京/,'A serene Japanese garden with a wooden torii gate, cherry blossom trees in full bloom, stone lanterns and a koi pond reflecting soft pink petals'],
+    [/中国|汉语|北京|上海|长城/,'An ancient Chinese village nestled between dramatic karst mountains, with tiled rooftops, stone bridges over clear streams, and red lanterns hanging in the mist'],
+    [/美国|留学|出国/,'A young international student on a university campus abroad, walking confidently with a backpack among grand buildings and autumn trees'],
+    [/学校|上学|学生|读书|课堂|老师|教室/,'A focused student at a wooden desk surrounded by open textbooks, deeply concentrated on studies in a cozy well-lit room'],
+    [/吃饭|食物|饭|菜|餐厅|好吃|美食/,'A richly detailed spread of freshly prepared dishes on a rustic wooden table, steam rising from bowls, vibrant colors of fresh ingredients'],
+    [/家人|家庭|父母|妈妈|爸爸|兄弟|姐妹/,'A warm family gathered around a dinner table, sharing a meal with laughter and genuine connection, golden light filling the cozy dining room'],
+    [/朋友|同学|一起玩/,'A group of cheerful young friends outdoors, laughing together, vibrant energy and genuine joy captured in a candid moment'],
+    [/旅游|旅行|参观|游览/,'A solo traveler standing at a scenic overlook, backpack on, gazing at a stunning panoramic view of mountains and valleys below'],
+    [/买东西|购物|超市|商场/,'A lively outdoor market with colorful stalls, vendors and shoppers, vibrant signage and fresh produce on display'],
+    [/运动|跑步|踢球|打球|体育/,'An athlete in peak form mid-action, muscles defined, intense focus, dynamic motion captured against a dramatic backdrop'],
+    [/大自然|山|河|海|森林|树林/,'An untouched natural landscape — towering trees, rocky cliffs, crystal-clear water under a wide open sky'],
+    [/工作|上班|办公室|公司/,'A professional in a sleek modern workspace, focused at their desk, city skyline visible through floor-to-ceiling windows'],
+    [/花|花朵|开花/,'A close-up of vibrant blooming flowers with delicate petals catching morning dew, rich saturated colors against a soft blurred background'],
+    [/下雨|雨天|打伞/,'A quiet city street in the rain, reflections shimmering on wet pavement, a lone figure under an umbrella, moody and atmospheric'],
+    [/孩子|小孩|儿童|婴儿/,'A joyful child playing outdoors, carefree laughter, soft golden light, innocence and wonder captured in a candid moment'],
+    [/音乐|唱歌|乐器|钢琴|吉他/,'A musician performing passionately on stage, warm spotlight, audience in the background, emotion and artistry in every gesture'],
+    [/医生|医院|护士|看病/,'A caring doctor in a bright modern clinic, attentively examining a patient, clean professional environment'],
+    [/城市|街道|马路|高楼/,'A bustling modern city street at golden hour, tall buildings casting long shadows, people moving with energy and purpose'],
+    [/咖啡|茶|喝/,'A cozy café scene with a warm cup of coffee on a wooden table, soft light filtering through windows, peaceful and inviting'],
+    // Tiếng Việt fallback
+    [/đất nước|quốc gia/i,'A vast nation landscape with towering mountains, winding rivers and modern cities'],
+    [/việt nam/i,'A breathtaking Vietnamese countryside with terraced rice paddies and traditional stilt houses'],
+    [/nhật bản/i,'A serene Japanese garden with cherry blossom trees and a wooden torii gate'],
+    [/ăn|đồ ăn/i,'A richly detailed spread of freshly prepared dishes on a rustic wooden table'],
+    [/học|trường/i,'A focused student at a wooden desk surrounded by open textbooks'],
+    [/gia đình/i,'A warm family gathered around a dinner table in golden light'],
+    [/du lịch|du học/i,'A traveler at a scenic overlook gazing at a stunning panoramic view'],
+  ];
+
+  let visual='';
+  for(const [pattern, desc] of visualMap){
+    const matched=typeof pattern==='string'?base.includes(pattern):pattern.test(base);
+    if(matched){visual=desc;break;}
+  }
+
+  if(!visual){
+    // Fallback: dùng meaning làm hint nếu có
+    const hint=meaning||base;
+    visual=`${hint}, depicted in a vivid and detailed real-world scene with strong visual storytelling`;
+  }
+
+  const parts=[visual];
+  parts.push(`${style} style`);
+  parts.push(color);
+  parts.push(comp);
+  if(custom) parts.push(custom);
+  parts.push('No text, letters, numbers or writing anywhere in the image');
+
+  return parts.join('. ')+'.';
+}
+function pickChip(group,el){
+  const map={style:'styleChips',color:'colorChips',comp:'compChips'};
+  const key={style:'pStyle',color:'pColor',comp:'pComp'}[group];
+  document.querySelectorAll('#'+map[group]+' .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  S[key]=el.dataset.val;
+  updPreview();
+}
+function updPreview(){
+  S.pCustom=document.getElementById('customInput')?.value||'';
+  const ex=S.prompts[0]||{sentence:'我明天去学校。',meaning:'Ngày mai tôi đi đến trường.'};
+  document.getElementById('promptPreview').textContent='Preview: '+mkPrompt(ex.sentence,ex.meaning);
+}
+function applySettings(){
+  S.pCustom=document.getElementById('customInput')?.value||'';
+  S.prompts.forEach(p=>{p.prompt=mkPrompt(p.sentence,p.meaning);});
+  S.prompts.forEach((p,i)=>{const ta=document.getElementById('pt-'+i);if(ta){ta.value=p.prompt;ta.style.borderColor='var(--ac)';setTimeout(()=>ta.style.borderColor='',500);}});
+}
+function buildPrompts(){
+  if(!S.rawRows.length){alert('Tải file dữ liệu trước!');return;}
+  S.sentenceCol=+document.getElementById('selSent').value;
+  S.meaningCol=+document.getElementById('selMean').value;
+  S.rowFrom=clamp(+document.getElementById('rowFrom').value);
+  S.rowTo=clamp(+document.getElementById('rowTo').value);
+  const sel=S.rawRows.slice(S.rowFrom-1,S.rowTo);
+  S.prompts=sel.map(row=>({sentence:String(row[S.sentenceCol]||'').trim(),meaning:S.meaningCol>=0?String(row[S.meaningCol]||'').trim():'',prompt:''}));
+  S.prompts.forEach(p=>{p.prompt=mkPrompt(p.sentence,p.meaning);});
+  document.getElementById('p3empty').style.display='none';
+  document.getElementById('p3area').style.display='block';
+  updPreview();
+  _promptPage=0;
+  renderPromptPage();
+  document.getElementById('p4empty').style.display='';document.getElementById('p4area').style.display='none';
+  setTimeout(()=>document.getElementById('s3').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+let _promptPage=0;
+const PROMPTS_PER_PAGE=10;
+
+function renderPromptPage(){
+  const total=S.prompts.length;
+  const totalPages=Math.ceil(total/PROMPTS_PER_PAGE);
+  const start=_promptPage*PROMPTS_PER_PAGE;
+  const end=Math.min(start+PROMPTS_PER_PAGE,total);
+  const slice=S.prompts.slice(start,end);
+
+  document.getElementById('pcount').textContent=
+    `${total} prompt · trang ${_promptPage+1}/${totalPages}`;
+
+  document.getElementById('plist').innerHTML=slice.map((p,j)=>{
+    const i=start+j;
+    return`<div class="pi" id="pi-${i}">
+      <div><div class="pi-num">#${i+1}</div><div class="pi-sent">${p.sentence}</div>${p.meaning?`<div class="pi-mean">${p.meaning}</div>`:''}</div>
+      <div><textarea class="pi-ta" id="pt-${i}" rows="3">${p.prompt}</textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:5px"><button class="btn g" onclick="regenOne(${i})">↺ Tạo lại</button></div></div>
+    </div>`;
+  }).join('');
+
+  // Pagination controls
+  let pager='<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;flex-wrap:wrap">';
+  pager+=`<button class="btn s" style="font-size:12px;padding:6px 14px" ${_promptPage===0?'disabled':''} onclick="goPromptPage(${_promptPage-1})">← Trang trước</button>`;
+  for(let p=0;p<totalPages;p++){
+    pager+=`<button class="btn ${p===_promptPage?'p':'s'}" style="font-size:12px;padding:6px 12px;min-width:36px" onclick="goPromptPage(${p})">${p+1}</button>`;
+  }
+  pager+=`<button class="btn s" style="font-size:12px;padding:6px 14px" ${_promptPage===totalPages-1?'disabled':''} onclick="goPromptPage(${_promptPage+1})">Trang sau →</button>`;
+  pager+='</div>';
+  document.getElementById('plist').insertAdjacentHTML('beforeend',pager);
+}
+
+function goPromptPage(page){
+  savePrompts();
+  _promptPage=page;
+  renderPromptPage();
+  document.getElementById('s3').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+const REGEN_ANGLES=[
+  'wide angle shot, golden hour lighting',
+  'close-up shot, soft bokeh background',
+  'bird\'s eye view, cinematic composition',
+  'low angle shot, dramatic lighting',
+  'medium shot, overcast soft lighting',
+  'cinematic composition, blue hour atmosphere',
+];
+let _regenIdx=0;
+function regenOne(i){
+  // Thêm góc nhìn khác để tạo ra prompt mới
+  const prevCustom=S.pCustom;
+  const angle=REGEN_ANGLES[_regenIdx%REGEN_ANGLES.length];
+  _regenIdx++;
+  const prevComp=S.pComp;
+  S.pComp=angle;
+  S.prompts[i].prompt=mkPrompt(S.prompts[i].sentence,S.prompts[i].meaning);
+  S.pComp=prevComp;
+  const ta=document.getElementById('pt-'+i);
+  if(ta){ta.value=S.prompts[i].prompt;ta.style.borderColor='var(--ac)';setTimeout(()=>ta.style.borderColor='',600);}
+}
+function regenAll(){S.prompts.forEach(p=>{p.prompt=mkPrompt(p.sentence,p.meaning);});renderPromptPage();}
+function savePrompts(){S.prompts.forEach((p,i)=>{const ta=document.getElementById('pt-'+i);if(ta)p.prompt=ta.value;});}
+function goGen(){
+  savePrompts();
+  initGen();
+  setTimeout(()=>document.getElementById('s4').scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+// ── STEP 4 ──
+function initGen(){
+  S.results=S.prompts.map(p=>({...p,url:'',driveUrl:'',status:'wait',error:''}));
+  document.getElementById('p4empty').style.display='none';document.getElementById('p4area').style.display='block';
+  document.getElementById('st-t').textContent=S.results.length;
+  document.getElementById('st-w').textContent=S.results.length;
+  document.getElementById('st-d').textContent=0;document.getElementById('st-e').textContent=0;
+  document.getElementById('pb').style.width='0%';document.getElementById('exBox').style.display='none';
+  document.getElementById('rg').innerHTML=S.results.map((_,i)=>cardHTML(i)).join('');
+}
+function cardHTML(i){
+  const r=S.results[i];
+  const img=r.url?`<img class="ic-img" src="${r.url}" alt="">`:
+    `<div class="ic-ph">${r.status==='run'?'<div class="spin"></div><span>Đang tạo...</span>':r.status==='err'?`<span style="color:var(--rd);font-size:10px;padding:6px">${r.error||'Lỗi'}</span>`:'<span>Chờ...</span>'}</div>`;
+  const btns=r.url?`<div class="ic-btns"><a href="${r.driveUrl||r.url}" target="_blank">Mở ↗</a><button class="dl" onclick="dlImg('${r.url}',${i})">Tải về</button></div>`:'';
+  const driveErr=r.driveError?`<div style="font-size:10px;color:var(--rd);margin-top:4px">Drive: ${r.driveError}</div>`:
+    r.driveUrl?`<div style="font-size:10px;color:var(--gn);margin-top:4px">✅ Drive OK</div>`:'';
+  return `<div class="ic" id="ic-${i}">${img}<div class="ic-meta"><div class="ic-s">${r.sentence}</div>${r.meaning?`<div class="ic-m">${r.meaning}</div>`:''}<span class="badge b-${r.status}">${r.status==='wait'?'waiting':r.status==='run'?'generating...':r.status==='done'?'done':'error'}</span>${driveErr}${btns}</div></div>`;
+}
+function upCard(i){const el=document.getElementById('ic-'+i);if(el)el.outerHTML=cardHTML(i);}
+function upStats(){
+  const d=S.results.filter(r=>r.status==='done').length,e=S.results.filter(r=>r.status==='err').length;
+  document.getElementById('st-d').textContent=d;document.getElementById('st-e').textContent=e;
+  document.getElementById('st-w').textContent=S.results.filter(r=>r.status==='wait'||r.status==='run').length;
+  document.getElementById('pb').style.width=Math.round((d+e)/S.results.length*100)+'%';
+}
+function highlightField(id, msg){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.style.borderColor='var(--rd)';
+  el.style.boxShadow='0 0 0 3px rgba(248,113,113,.2)';
+  setTimeout(()=>{el.style.borderColor='';el.style.boxShadow='';},3000);
+}
+function scrollToField(id){
+  const el=document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function validateBeforeGen(){
+  // 1. API Key
+  const apiKey=(document.getElementById('apiKey')?.value||'').trim();
+  if(!apiKey){
+    scrollToField('s1');
+    setTimeout(()=>highlightField('apiKey'),400);
+    showToast('❌ Chưa nhập API Key ở Bước 1');
+    return false;
+  }
+  // 2. Drive toggle + Folder ID (tuỳ chọn, không bắt buộc)
+  // Không validate Folder ID — để trống = lưu vào My Drive
+  // 3. GAS URL
+  const gasUrl=(document.getElementById('gasUrl')?.value||'').trim();
+  if(S.useDriveGAS && !gasUrl){
+    scrollToField('s2');
+    setTimeout(()=>{
+      if(S.srcMode!=='gas') switchSrc('gas');
+      highlightField('gasUrl');
+    },400);
+    showToast('❌ Chưa nhập GAS URL ở Bước 2');
+    return false;
+  }
+  // 4. Dữ liệu
+  if(!S.rawRows.length){
+    scrollToField('s2');
+    showToast('❌ Chưa tải dữ liệu ở Bước 2');
+    return false;
+  }
+  // 5. Cột ảnh (nếu dùng GAS)
+  if(S.useDriveGAS && S.imageCol<0){
+    scrollToField('previewArea');
+    setTimeout(()=>highlightField('selImg'),400);
+    showToast('❌ Chưa chọn cột ghi ảnh ở Bước 2');
+    return false;
+  }
+  // 6. Prompts
+  if(!S.prompts.length){
+    scrollToField('s3');
+    showToast('❌ Chưa tạo prompt ở Bước 3');
+    return false;
+  }
+  return true;
+}
+
+function showToast(msg){
+  let t=document.getElementById('genToast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='genToast';
+    t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1e1e24;border:1px solid var(--rd);color:var(--rd);padding:10px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:opacity .3s;font-family:DM Sans,sans-serif';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.opacity='0',3000);
+}
+
+async function startGen(){
+  if(S.running)return;
+  if(!validateBeforeGen()) return;
+  // Đọc lại settings
+  S.apiKey=(document.getElementById('apiKey')?.value||'').trim();
+  S.gasUrl=(document.getElementById('gasUrl')?.value||S.gasUrl).trim();
+  S.gasDriveFolderId=(document.getElementById('gasDriveFolderId')?.value||S.gasDriveFolderId||'').trim();
+  S.running=true;S.stop=false;
+  document.getElementById('startBtn').disabled=true;document.getElementById('stopBtn').disabled=false;
+  for(let i=0;i<S.results.length;i++){
+    if(S.stop)break;
+    S.results[i].status='run';upCard(i);upStats();
+    try{
+      let url='', driveUrl='', b64='', mimeType='image/png';
+
+      if(S.provider==='openai'){
+        // DALL·E 3 trả URL công khai → GAS fetch được trực tiếp
+        url=await genOAI(S.results[i].prompt);
+      } else if(S.provider==='nanobana'){
+        // Nano Banana 2 trả base64
+        const r=await genNanaBana(S.results[i].prompt);
+        url=r.blobUrl; b64=r.b64; mimeType=r.mimeType;
+      } else {
+        // Stable Diffusion trả base64
+        const r=await genSD(S.results[i].prompt);
+        url=r.blobUrl; b64=r.b64; mimeType=r.mimeType;
+      }
+
+      // Upload lên Drive qua GAS
+      if(S.useDriveGAS && S.gasUrl){
+        try{
+          const payload={action:'uploadImage',filename:`flashgen_${i+1}.png`,folderId:S.gasDriveFolderId||''};
+          if(b64){ payload.imageBase64=b64; payload.mimeType=mimeType; }
+          else    { payload.imageUrl=url; }
+          const up=await gasCall(payload);
+          if(up.ok) driveUrl=up.url;
+          else {
+            // Hiện lỗi Drive upload trên card
+            S.results[i].driveError=up.error||'GAS upload thất bại';
+          }
+        }catch(e){
+          S.results[i].driveError=e.message;
+        }
+      }
+
+      S.results[i]={...S.results[i],status:'done',url,driveUrl};
+    }catch(e){S.results[i]={...S.results[i],status:'err',error:e.message};}
+    upCard(i);upStats();await sleep(S.provider==='nanobana'?35000:350);
+  }
+  S.running=false;document.getElementById('startBtn').disabled=false;document.getElementById('stopBtn').disabled=true;
+  const done=S.results.filter(r=>r.status==='done').length;
+  document.getElementById('genStatus').textContent=`Hoàn thành ${done}/${S.results.length}`;
+  document.getElementById('exBox').style.display='block';
+
+  const allUrls=S.results.map(r=>r.driveUrl||r.url||'');
+  const hasBlobUrls=allUrls.some(u=>u.startsWith('blob:'));
+  const hasHttpUrls=allUrls.some(u=>u.startsWith('http'));
+
+  document.getElementById('urlBox').textContent=allUrls.join('\n');
+
+  const warnEl=document.getElementById('blobWarn');
+  const writeBtn=document.getElementById('writeSheetBtn');
+  if(warnEl){
+    if(hasBlobUrls && !hasHttpUrls){
+      warnEl.innerHTML='⚠ URL đang là <code>blob://</code> (chỉ tồn tại trong trình duyệt, không dùng được trong Sheet).<br>👉 Bật <b>"Tự động upload ảnh lên Drive qua GAS"</b> ở Bước 1 rồi gen lại để có link http.';
+      warnEl.style.display='block';
+      if(writeBtn) writeBtn.style.display='none';
+    } else if(hasBlobUrls && hasHttpUrls){
+      warnEl.innerHTML='⚠ Một số ảnh chưa upload Drive — chỉ ghi các link http vào Sheet.';
+      warnEl.style.display='block';
+      if(writeBtn) writeBtn.style.display='';
+    } else {
+      warnEl.style.display='none';
+      if(writeBtn) writeBtn.style.display='';
+    }
+  }
+}
+async function genOAI(prompt){
+  const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+S.apiKey},body:JSON.stringify({model:'dall-e-3',prompt,size:S.imgSize,quality:S.imgQuality,n:1})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);return d.data?.[0]?.url;
+}
+
+async function genNanaBana(prompt, retry=0){
+  // Dùng gemini-2.5-flash-image (Nano Banana) — 500 ảnh/ngày miễn phí
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${S.apiKey}`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      contents:[{parts:[{text:prompt}]}],
+      generationConfig:{responseModalities:['IMAGE','TEXT']}
+    })
+  });
+  const d=await res.json();
+  if(d.error){
+    // Quota exceeded → tự retry sau 25 giây (tối đa 2 lần)
+    if((d.error.code===429||d.error.status==='RESOURCE_EXHAUSTED')&&retry<2){
+      const wait=25000+(retry*10000);
+      showToast(`⏳ Rate limit — thử lại sau ${wait/1000}s (lần ${retry+1}/2)...`);
+      await sleep(wait);
+      return genNanaBana(prompt, retry+1);
+    }    throw new Error(d.error.message||'Gemini API error');
+  }
+  const parts=d.candidates?.[0]?.content?.parts||[];
+  const imgPart=parts.find(p=>p.inlineData?.mimeType?.startsWith('image/'));
+  if(!imgPart) throw new Error('Không nhận được ảnh. Kiểm tra lại API key.');
+  const mimeType=imgPart.inlineData.mimeType;
+  const b64=imgPart.inlineData.data;
+  const blob=await(await fetch(`data:${mimeType};base64,${b64}`)).blob();
+  return {blobUrl:URL.createObjectURL(blob), b64, mimeType};
+}
+async function genSD(prompt){
+  const [w,h]=S.imgSize.split('x').map(Number);const fd=new FormData();
+  fd.append('prompt',prompt);fd.append('output_format','png');fd.append('width',w);fd.append('height',h);if(S.stylePreset)fd.append('style_preset',S.stylePreset);
+  const r=await fetch('https://api.stability.ai/v2beta/stable-image/generate/core',{method:'POST',headers:{'Authorization':'Bearer '+S.apiKey,'Accept':'image/*'},body:fd});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.errors?.[0]||'Stability AI error');}
+  const blob=await r.blob();
+  // Convert sang base64 để GAS upload được
+  const b64=await new Promise((res,rej)=>{
+    const reader=new FileReader();
+    reader.onload=()=>res(reader.result.split(',')[1]);
+    reader.onerror=rej;
+    reader.readAsDataURL(blob);
+  });
+  const blobUrl=URL.createObjectURL(blob);
+  return {blobUrl, b64, mimeType:'image/png'};
+}
+async function gasCall(payload){
+  const url=(S.gasUrl||document.getElementById('gasUrl')?.value||'').trim();
+  if(!url) throw new Error('Chưa nhập GAS URL');
+
+  // uploadImage với base64 dùng POST (GET bị giới hạn URL length)
+  if(payload.imageBase64){
+    const res=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify(payload),
+      redirect:'follow'
+    });
+    if(!res.ok) throw new Error('GAS HTTP '+res.status);
+    const text=await res.text();
+    try{return JSON.parse(text);}catch{throw new Error('GAS trả về dữ liệu không hợp lệ');}
+  }
+
+  // Các action khác dùng GET
+  const params=new URLSearchParams();
+  Object.entries(payload).forEach(([k,v])=>{
+    params.set(k,typeof v==='object'?JSON.stringify(v):String(v));
+  });
+  const res=await fetch(url+'?'+params.toString(),{method:'GET',redirect:'follow'});
+  if(!res.ok) throw new Error('GAS HTTP '+res.status);
+  const text=await res.text();
+  try{return JSON.parse(text);}catch{throw new Error('GAS trả về dữ liệu không hợp lệ');}
+}
+
+async function pingGAS(){
+  const el=document.getElementById('gasStatus');
+  el.textContent='Đang kiểm tra...';el.style.color='var(--tx2)';
+  S.gasUrl=document.getElementById('gasUrl').value.trim();
+  try{
+    const r=await gasCall({action:'ping'});
+    if(r.ok){el.textContent='✅ '+r.msg;el.style.color='var(--gn)';}
+    else throw new Error(r.error||'Lỗi không xác định');
+  }catch(e){el.textContent='❌ '+e.message;el.style.color='var(--rd)';}
+}
+
+async function loadFromGAS(){
+  S.gasUrl=document.getElementById('gasUrl').value.trim();
+  S.sheetId=document.getElementById('sheetId').value.trim();
+  if(!S.gasUrl){alert('Nhập GAS URL!');return;}
+  if(!S.sheetId){alert('Nhập Sheet ID!');return;}
+  const btn=document.getElementById('gasLoadStatus');
+  btn.textContent='Đang tải...';
+  try{
+    const r=await gasCall({action:'getRows',sheetId:S.sheetId,sheetName:S.sheetName||''});
+    if(r.error) throw new Error(r.error);
+    if(r.sheetNames&&r.sheetNames.length>1){
+      const sel=document.getElementById('sheetNameSel');
+      sel.innerHTML=r.sheetNames.map(n=>`<option value="${n}"${n===S.sheetName?'selected':''}>${n}</option>`).join('');
+      sel.onchange=function(){S.sheetName=this.value;loadFromGAS();};
+      document.getElementById('sheetNameField').style.display='';
+    }
+    processData(r.headers,r.rows);
+    btn.textContent=`✅ Đã tải ${r.total} hàng`;
+    document.getElementById('writeSheetBtn').style.display='';
+  }catch(e){btn.textContent='❌ '+e.message;btn.style.color='var(--rd)';}
+}
+
+async function writeBackToSheet(){
+  const btn=document.getElementById('writeSheetBtn');
+  const status=document.getElementById('writeStatus');
+  if(!S.gasUrl){alert('Cần kết nối GAS ở Bước 2 trước!');return;}
+  if(S.imageCol<0){alert('Chọn cột "Ghi ảnh vào cột" ở Bước 2!');return;}
+  const urls=S.results.map(r=>r.driveUrl||r.url||'');
+  btn.disabled=true;btn.textContent='Đang ghi...';status.style.display='none';
+  try{
+    const r=await gasCall({
+      action:'writeUrls',sheetId:S.sheetId,sheetName:S.sheetName,
+      urlColumn:S.imageCol,urls:JSON.stringify(urls),startRow:S.rowFrom-1
+    });
+    if(r.error) throw new Error(r.error);
+    status.textContent=`✅ Đã ghi ${r.written} link vào Sheet`;
+    status.style.display='inline';status.style.color='var(--gn)';
+  }catch(e){
+    status.textContent='❌ '+e.message;status.style.display='inline';status.style.color='var(--rd)';
+  }finally{btn.disabled=false;btn.textContent='Ghi link về Google Sheet';}
+}
+
+async function uploadDrive(imgUrl,filename){
+  const blob=await(await fetch(imgUrl)).blob();const meta={name:filename,mimeType:'image/png'};if(S.driveFolderId)meta.parents=[S.driveFolderId];
+  const form=new FormData();form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));form.append('file',blob);
+  const up=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Authorization':'Bearer '+S.driveToken},body:form});
+  const data=await up.json();if(!data.id)throw new Error('Drive upload failed');
+  await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`,{method:'POST',headers:{'Authorization':'Bearer '+S.driveToken,'Content-Type':'application/json'},body:JSON.stringify({role:'reader',type:'anyone'})});
+  return`https://drive.google.com/uc?id=${data.id}&export=view`;
+}
+async function dlImg(url,i){
+  try{
+    // blob URL → dùng thẳng, https URL → fetch trước
+    let href=url;
+    if(!url.startsWith('blob:')){
+      const r=await fetch(url);
+      href=URL.createObjectURL(await r.blob());
+    }
+    const a=document.createElement('a');a.href=href;a.download=`flashgen_${i+1}.png`;a.click();
+  }catch{window.open(url,'_blank');}
+}
+function copyURLs(){navigator.clipboard.writeText(S.results.map(r=>r.driveUrl||r.url||'').join('\n')).then(()=>{const el=document.getElementById('cpOk');el.style.display='inline';setTimeout(()=>el.style.display='none',2000);});}
+function dlTSV(){const rows=['sentence\tmeaning\timage_url',...S.results.map(r=>`${r.sentence}\t${r.meaning}\t${r.driveUrl||r.url||''}`)];const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/tab-separated-values'}));a.download='flashgen_export.tsv';a.click();}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+</script>
+</body>
+</html>
